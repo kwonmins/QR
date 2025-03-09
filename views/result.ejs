@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR 코드 결과</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <h2>QR 코드 생성 완료</h2>
+        <p>아래 QR 코드를 스캔하면 업로드된 이미지를 확인할 수 있습니다.</p>
+
+        <!-- 📌 QR 코드 표시 -->
+        <div class="qr-code">
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=<%= encodeURIComponent('http://localhost:3000/' + resultId) %>" alt="QR Code">
+        </div>
+
+        <!-- 📌 업로드된 이미지 표시 (일정한 크기로 유지) -->
+        <h3>업로드된 이미지</h3>
+        <img src="<%= imageUrl %>" alt="업로드된 이미지" class="result-image">
+
+        <br><br>
+        <a href="/" class="custom-file-upload">🏠 다시 업로드</a>
+    </div>
+</body>
+</html>

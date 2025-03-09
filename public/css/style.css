@@ -1,0 +1,137 @@
+/* ✅ 기본 스타일 */
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f4f4f4;
+  text-align: center;
+  margin: 0;
+  padding: 50px;
+}
+
+/* ✅ 컨테이너 박스 */
+.container {
+  max-width: 500px;
+  margin: 50px auto;
+  padding: 20px;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+/* ✅ 파일 선택 버튼 */
+.custom-file-upload {
+  display: inline-block;
+  padding: 10px 20px;
+  background: #007bff;
+  color: white;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.custom-file-upload:hover {
+  background: #0056b3;
+}
+
+/* ✅ 숨겨진 파일 선택 input */
+input[type="file"] {
+  display: none;
+}
+
+/* ✅ 미리보기 이미지 */
+#preview {
+  max-width: 100%;
+  margin-top: 15px;
+  display: none;
+  border-radius: 10px;
+  border: 2px solid #ddd;
+}
+
+/* ✅ 업로드 버튼 */
+button {
+  margin-top: 15px;
+  padding: 12px 20px;
+  border: none;
+  background: #28a745;
+  color: white;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+  border-radius: 5px;
+  width: 100%;
+}
+
+button:disabled {
+  background: gray;
+  cursor: not-allowed;
+}
+
+button:hover {
+  background: #218838;
+}
+
+/* ✅ QR 코드 스타일 */
+.qr-code {
+  margin-top: 20px;
+  border: 2px solid #ddd;
+  padding: 10px;
+  border-radius: 5px;
+  background: white;
+}
+
+/* ✅ 링크 스타일 */
+a {
+  color: #00B7FF;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* ✅ 미리보기 및 결과 이미지 크기 통일 */
+#preview,
+.result-image {
+  max-width: 100%;
+  width: 300px; /* 원하는 고정 크기 */
+  height: 300px; /* 정사각형으로 유지 */
+  object-fit: cover; /* 이미지 비율 유지하면서 채우기 */
+  margin-top: 15px;
+  border-radius: 10px;
+  border: 2px solid #ddd;
+}
+
+/* ✅ 여러 장 미리보기 스타일 (일정한 크기로 유지) */
+#previewContainer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.preview-image {
+  width: 120px;  /* 고정된 너비 */
+  height: 120px; /* 고정된 높이 */
+  object-fit: cover; /* 이미지 비율 유지하면서 채우기 */
+  border-radius: 5px;
+  border: 2px solid #ddd;
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+}
+/* ✅ 여러 장의 사진을 앨범처럼 정렬 */
+.album-gallery {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.album-image {
+  width: 150px;  /* 고정된 너비 */
+  height: 150px; /* 고정된 높이 */
+  object-fit: cover; /* 비율 유지하면서 크기 맞춤 */
+  border-radius: 10px;
+  border: 2px solid #ddd;
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+}

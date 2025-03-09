@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>사진 앨범</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <h2>📸 나의 추억 앨범</h2>
+        <p>QR 코드를 통해 공유된 사진입니다.</p>
+
+        <div class="album-gallery">
+            <% images.forEach(image => { %>
+                <img src="<%= image %>" alt="앨범 사진" class="album-image">
+            <% }); %>
+        </div>
+
+        <br>
+        <a href="/" class="custom-file-upload">🏠 다시 업로드</a>
+    </div>
+</body>
+</html>
