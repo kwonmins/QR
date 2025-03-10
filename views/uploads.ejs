@@ -1,98 +1,161 @@
 <!DOCTYPE html>
 <html lang="ko">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>사진 업로드 (최대 10장)</title>
-    <link rel="stylesheet" href="/css/style.css">
-</head>
-<body>
+    <link rel="stylesheet" href="/css/style.css" />
+    <style>
+      /* 🔥 로딩 애니메이션 스타일 */
+      #loading {
+        display: none;
+        text-align: center;
+        font-size: 18px;
+        font-weight: bold;
+        margin-top: 20px;
+      }
+      .spinner {
+        width: 40px;
+        height: 40px;
+        border: 4px solid rgba(0, 0, 0, 0.2);
+        border-top: 4px solid #3498db;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin: 10px auto;
+      }
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
+  </head>
+  <body>
     <div class="container">
-        <h2>📸 사진 업로드 (최대 10장)</h2>
+      <h2>📸 사진 업로드 (최대 10장)</h2>
 
-        <!-- 업로드 폼 -->
-        <form id="uploadForm" action="/upload" method="POST" enctype="multipart/form-data">
-            <label for="imageInput" class="custom-file-upload">📷 사진 선택 (최대 10장)</label>
-            <input type="file" name="images" id="imageInput" accept="image/*" multiple required>
-            <p id="fileCount">선택된 파일: 0 / 10</p>
-            <div id="previewContainer"></div>
-            <button type="submit" id="uploadBtn" disabled>📤 업로드 및 QR 생성</button>
-        </form>
+      <!-- 업로드 폼 -->
+      <form
+        id="uploadForm"
+        action="/upload"
+        method="POST"
+        enctype="multipart/form-data"
+      >
+        <label for="imageInput" class="custom-file-upload"
+          >📷 사진 선택 (최대 10장)</label
+        >
+        <input
+          type="file"
+          name="images"
+          id="imageInput"
+          accept="image/*"
+          multiple
+          required
+        />
+        <p id="fileCount">선택된 파일: 0 / 10</p>
+        <div id="previewContainer"></div>
+        <button type="submit" id="uploadBtn" disabled>
+          📤 업로드 및 QR 생성
+        </button>
+      </form>
 
-        <!-- QR 코드 표시 -->
-        <div id="qrContainer" style="display: none; margin-top: 20px;">
-            <h3>📌 QR 코드를 스캔하여 앨범을 확인하세요!</h3>
-            <a id="qrLink" href="#" target="_blank">
-                <img id="qrImage" src="" alt="QR Code">
-            </a>
-        </div>
+      <!-- 🔥 업로드 중 메시지 (기본 숨김) -->
+      <div id="loading">
+        <div class="spinner"></div>
+        업로드 중... 잠시만 기다려 주세요!
+      </div>
+
+      <!-- QR 코드 표시 -->
+      <div id="qrContainer" style="display: none; margin-top: 20px">
+        <h3>📌 QR 코드를 스캔하여 앨범을 확인하세요!</h3>
+        <a id="qrLink" href="#" target="_blank">
+          <img id="qrImage" src="" alt="QR Code" />
+        </a>
+      </div>
     </div>
 
     <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            const imageInput = document.getElementById("imageInput");
-            const previewContainer = document.getElementById("previewContainer");
-            const uploadBtn = document.getElementById("uploadBtn");
-            const fileCount = document.getElementById("fileCount");
-            const qrContainer = document.getElementById("qrContainer");
-            const qrImage = document.getElementById("qrImage");
-            const qrLink = document.getElementById("qrLink");
+      document.addEventListener("DOMContentLoaded", function () {
+        const imageInput = document.getElementById("imageInput");
+        const previewContainer = document.getElementById("previewContainer");
+        const uploadBtn = document.getElementById("uploadBtn");
+        const fileCount = document.getElementById("fileCount");
+        const qrContainer = document.getElementById("qrContainer");
+        const qrImage = document.getElementById("qrImage");
+        const qrLink = document.getElementById("qrLink");
+        const loadingDiv = document.getElementById("loading"); // 🔥 추가된 로딩 표시 요소
 
-            // 파일 선택 시 미리보기 기능 & 10장 제한
-            imageInput.addEventListener("change", function(event) {
-                const files = event.target.files;
-                previewContainer.innerHTML = ""; // 기존 미리보기 초기화
-                qrContainer.style.display = "none"; // QR 코드 숨기기
+        // 파일 선택 시 미리보기 기능 & 10장 제한
+        imageInput.addEventListener("change", function (event) {
+          const files = event.target.files;
+          previewContainer.innerHTML = ""; // 기존 미리보기 초기화
+          qrContainer.style.display = "none"; // QR 코드 숨기기
 
-                if (files.length > 10) {
-                    alert("최대 10장까지만 업로드할 수 있습니다!");
-                    imageInput.value = ""; // 파일 선택 초기화
-                    fileCount.textContent = "선택된 파일: 0 / 10";
-                    uploadBtn.disabled = true;
-                    return;
-                }
+          if (files.length > 10) {
+            alert("최대 10장까지만 업로드할 수 있습니다!");
+            imageInput.value = ""; // 파일 선택 초기화
+            fileCount.textContent = "선택된 파일: 0 / 10";
+            uploadBtn.disabled = true;
+            return;
+          }
 
-                fileCount.textContent = `선택된 파일: ${files.length} / 10`;
-                uploadBtn.disabled = files.length === 0; // 파일 없으면 업로드 버튼 비활성화
+          fileCount.textContent = `선택된 파일: ${files.length} / 10`;
+          uploadBtn.disabled = files.length === 0; // 파일 없으면 업로드 버튼 비활성화
 
-                Array.from(files).forEach(file => {
-                    const reader = new FileReader();
-                    const img = document.createElement("img");
-                    img.classList.add("preview-image");
+          Array.from(files).forEach((file) => {
+            const reader = new FileReader();
+            const img = document.createElement("img");
+            img.classList.add("preview-image");
 
-                    reader.onload = function(e) {
-                        img.src = e.target.result;
-                        previewContainer.appendChild(img);
-                    };
-                    reader.readAsDataURL(file);
-                });
-            });
-
-            // 폼 제출 시 서버로 데이터 전송
-            document.getElementById("uploadForm").addEventListener("submit", function(event) {
-                event.preventDefault();
-                const formData = new FormData(this);
-
-                fetch("/upload", {
-                    method: "POST",
-                    body: formData
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        // ✅ QR 코드 및 앨범 페이지 링크 설정
-                        qrImage.src = data.qrCodeData;
-                        qrLink.href = `/${data.albumId}`;
-                        qrContainer.style.display = "block";
-
-                        previewContainer.innerHTML = ""; // 기존 미리보기 삭제
-                    } else {
-                        alert("파일 업로드 실패: " + data.message);
-                    }
-                })
-                .catch(error => console.error("업로드 중 오류 발생:", error));
-            });
+            reader.onload = function (e) {
+              img.src = e.target.result;
+              previewContainer.appendChild(img);
+            };
+            reader.readAsDataURL(file);
+          });
         });
+
+        // 폼 제출 시 서버로 데이터 전송
+        document
+          .getElementById("uploadForm")
+          .addEventListener("submit", function (event) {
+            event.preventDefault();
+            const formData = new FormData(this);
+
+            // 🔥 업로드 중 표시
+            loadingDiv.style.display = "block";
+            uploadBtn.disabled = true; // 버튼 비활성화
+
+            fetch("/upload", {
+              method: "POST",
+              body: formData,
+            })
+              .then((response) => response.json())
+              .then((data) => {
+                loadingDiv.style.display = "none"; // ✅ 업로드 완료되면 숨김
+                uploadBtn.disabled = false;
+
+                if (data.success) {
+                  // ✅ QR 코드 및 앨범 페이지 링크 설정
+                  qrImage.src = data.qrCodeData;
+                  qrLink.href = `/${data.albumId}`;
+                  qrContainer.style.display = "block";
+
+                  previewContainer.innerHTML = ""; // 기존 미리보기 삭제
+                } else {
+                  alert("파일 업로드 실패: " + data.message);
+                }
+              })
+              .catch((error) => {
+                loadingDiv.style.display = "none";
+                uploadBtn.disabled = false;
+                console.error("업로드 중 오류 발생:", error);
+              });
+          });
+      });
     </script>
-</body>
+  </body>
 </html>
