@@ -38,23 +38,11 @@
       <h2>📸 사진 업로드 (최대 10장)</h2>
 
       <!-- 업로드 폼 -->
-      <form
-        id="uploadForm"
-        action="/upload"
-        method="POST"
-        enctype="multipart/form-data"
-      >
-        <label for="imageInput" class="custom-file-upload"
-          >📷 사진 선택 (최대 10장)</label
-        >
-        <input
-          type="file"
-          name="images"
-          id="imageInput"
-          accept="image/*"
-          multiple
-          required
-        />
+      <form id="uploadForm">
+        <label for="imageInput" class="custom-file-upload">
+          📷 사진 선택 (최대 10장)
+        </label>
+        <input type="file" id="imageInput" accept="image/*" multiple required />
         <p id="fileCount">선택된 파일: 0 / 10</p>
         <div id="previewContainer"></div>
         <button type="submit" id="uploadBtn" disabled>
@@ -86,65 +74,142 @@
         const qrContainer = document.getElementById("qrContainer");
         const qrImage = document.getElementById("qrImage");
         const qrLink = document.getElementById("qrLink");
-        const loadingDiv = document.getElementById("loading"); // 🔥 추가된 로딩 표시 요소
+        const loadingDiv = document.getElementById("loading");
 
-        // 파일 선택 시 미리보기 기능 & 10장 제한
-        imageInput.addEventListener("change", function (event) {
-          const files = event.target.files;
-          previewContainer.innerHTML = ""; // 기존 미리보기 초기화
-          qrContainer.style.display = "none"; // QR 코드 숨기기
+        // ✅ 이미지 압축 함수 (비동기 처리 개선)
+        function compressImage(file) {
+          return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = function (event) {
+              const img = new Image();
+              img.src = event.target.result;
+              img.onload = function () {
+                const canvas = document.createElement("canvas");
+                const ctx = canvas.getContext("2d");
+                const MAX_WIDTH = 1000;
+                const MAX_HEIGHT = 1000;
+
+                let width = img.width;
+                let height = img.height;
+
+                if (width > MAX_WIDTH || height > MAX_HEIGHT) {
+                  if (width > height) {
+                    height *= MAX_WIDTH / width;
+                    width = MAX_WIDTH;
+                  } else {
+                    width *= MAX_HEIGHT / height;
+                    height = MAX_HEIGHT;
+                  }
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+                ctx.drawImage(img, 0, 0, width, height);
+
+                canvas.toBlob(
+                  (blob) => {
+                    if (blob) resolve(blob);
+                    else reject(new Error("이미지 압축 실패"));
+                  },
+                  "image/jpeg",
+                  0.7
+                );
+              };
+            };
+          });
+        }
+
+        // 파일 선택 시 미리보기 & 10장 제한 & 압축 기능 추가
+        imageInput.addEventListener("change", async function (event) {
+          const files = Array.from(event.target.files);
+          previewContainer.innerHTML = "";
+          qrContainer.style.display = "none";
 
           if (files.length > 10) {
             alert("최대 10장까지만 업로드할 수 있습니다!");
-            imageInput.value = ""; // 파일 선택 초기화
+            imageInput.value = "";
             fileCount.textContent = "선택된 파일: 0 / 10";
             uploadBtn.disabled = true;
             return;
           }
 
           fileCount.textContent = `선택된 파일: ${files.length} / 10`;
-          uploadBtn.disabled = files.length === 0; // 파일 없으면 업로드 버튼 비활성화
+          uploadBtn.disabled = files.length === 0;
 
-          Array.from(files).forEach((file) => {
-            const reader = new FileReader();
-            const img = document.createElement("img");
-            img.classList.add("preview-image");
+          for (const file of files) {
+            if (file.size > 5 * 1024 * 1024) {
+              // ✅ 5MB 이상 제한
+              alert(`"${file.name}" 파일 크기가 너무 큽니다! (최대 5MB)`);
+              imageInput.value = "";
+              return;
+            }
 
-            reader.onload = function (e) {
-              img.src = e.target.result;
-              previewContainer.appendChild(img);
-            };
-            reader.readAsDataURL(file);
-          });
+            try {
+              const compressedBlob = await compressImage(file);
+              const reader = new FileReader();
+              reader.readAsDataURL(compressedBlob);
+              reader.onload = function (e) {
+                const img = document.createElement("img");
+                img.classList.add("preview-image");
+                img.src = e.target.result;
+                previewContainer.appendChild(img);
+              };
+            } catch (error) {
+              console.error("이미지 압축 실패:", error);
+            }
+          }
         });
 
         // 폼 제출 시 서버로 데이터 전송
         document
           .getElementById("uploadForm")
-          .addEventListener("submit", function (event) {
+          .addEventListener("submit", async function (event) {
             event.preventDefault();
-            const formData = new FormData(this);
+            const files = Array.from(imageInput.files);
+
+            if (files.length === 0) {
+              alert("파일을 선택하세요!");
+              return;
+            }
 
             // 🔥 업로드 중 표시
             loadingDiv.style.display = "block";
-            uploadBtn.disabled = true; // 버튼 비활성화
+            uploadBtn.disabled = true;
 
+            const formData = new FormData();
+
+            for (const file of files) {
+              try {
+                const compressedBlob = await compressImage(file);
+                const compressedFile = new File([compressedBlob], file.name, {
+                  type: "image/jpeg",
+                });
+                formData.append("images", compressedFile);
+              } catch (error) {
+                console.error("이미지 압축 오류:", error);
+                alert("파일 압축 중 오류가 발생했습니다.");
+                loadingDiv.style.display = "none";
+                uploadBtn.disabled = false;
+                return;
+              }
+            }
+
+            // 🔥 서버로 업로드 요청
             fetch("/upload", {
               method: "POST",
               body: formData,
             })
               .then((response) => response.json())
               .then((data) => {
-                loadingDiv.style.display = "none"; // ✅ 업로드 완료되면 숨김
+                loadingDiv.style.display = "none";
                 uploadBtn.disabled = false;
 
                 if (data.success) {
-                  // ✅ QR 코드 및 앨범 페이지 링크 설정
                   qrImage.src = data.qrCodeData;
                   qrLink.href = `/${data.albumId}`;
                   qrContainer.style.display = "block";
-
-                  previewContainer.innerHTML = ""; // 기존 미리보기 삭제
+                  previewContainer.innerHTML = "";
                 } else {
                   alert("파일 업로드 실패: " + data.message);
                 }
@@ -153,6 +218,7 @@
                 loadingDiv.style.display = "none";
                 uploadBtn.disabled = false;
                 console.error("업로드 중 오류 발생:", error);
+                alert("업로드 중 오류가 발생했습니다.");
               });
           });
       });
